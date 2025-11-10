@@ -77,10 +77,10 @@
 <!-- Formulario para eliminar múltiples casos -->
 <form id="formEliminarMultiples" action="{{ url_for('eliminar_multiples_casos') }}" method="POST">
     
-    <!-- Casos para Revisar -->
+    <!-- Todos los Casos (Sección Renombrada) -->
     <div class="card mb-4">
-        <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">📋 Casos para Revisar ({{ casos_pendientes|length }})</h5>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">📋 Todos los Casos ({{ casos_pendientes|length }})</h5>
             <div>
                 <button type="button" class="btn btn-outline-light btn-sm" onclick="seleccionarTodos()">
                     Seleccionar Todos
@@ -138,22 +138,22 @@
                                 <td>
                                     <form action="{{ url_for('cambiar_prioridad', id=caso.id) }}" method="POST" class="d-inline">
                                         <select name="prioridad" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="5" {% if caso.prioridad==5 %}selected{% endif %}>Máxima</option>
-                                            <option value="4" {% if caso.prioridad==4 %}selected{% endif %}>Alta</option>
-                                            <option value="3" {% if caso.prioridad==3 %}selected{% endif %}>Media</option>
-                                            <option value="2" {% if caso.prioridad==2 %}selected{% endif %}>Baja</option>
-                                            <option value="1" {% if caso.prioridad==1 %}selected{% endif %}>Mínima</option>
+                                            <option value="5" {% if caso.prioridad == 5 %}selected{% endif %}>Máxima</option>
+                                            <option value="4" {% if caso.prioridad == 4 %}selected{% endif %}>Alta</option>
+                                            <option value="3" {% if caso.prioridad == 3 %}selected{% endif %}>Media</option>
+                                            <option value="2" {% if caso.prioridad == 2 %}selected{% endif %}>Baja</option>
+                                            <option value="1" {% if caso.prioridad == 1 %}selected{% endif %}>Mínima</option>
                                         </select>
                                     </form>
                                 </td>
                                 <td>
                                     <form action="{{ url_for('cambiar_estado', id=caso.id) }}" method="POST" class="d-inline">
                                         <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="nuevo" {% if caso.estado=='nuevo' %}selected{% endif %}>Nuevo</option>
-                                            <option value="en_revision" {% if caso.estado=='en_revision' %}selected{% endif %}>En Revisión</option>
-                                            <option value="apto" {% if caso.estado=='apto' %}selected{% endif %}>Apto</option>
-                                            <option value="descartado" {% if caso.estado=='descartado' %}selected{% endif %}>Descartado</option>
-                                            <option value="contactado" {% if caso.estado=='contactado' %}selected{% endif %}>Contactado</option>
+                                            <option value="nuevo" {% if caso.estado == 'nuevo' %}selected{% endif %}>Nuevo</option>
+                                            <option value="en_revision" {% if caso.estado == 'en_revision' %}selected{% endif %}>En Revisión</option>
+                                            <option value="apto" {% if caso.estado == 'apto' %}selected{% endif %}>Apto</option>
+                                            <option value="descartado" {% if caso.estado == 'descartado' %}selected{% endif %}>Descartado</option>
+                                            <option value="contactado" {% if caso.estado == 'contactado' %}selected{% endif %}>Contactado</option>
                                         </select>
                                     </form>
                                 </td>
@@ -176,7 +176,10 @@
                     </table>
                 </div>
             {% else %}
-                <p class="text-muted text-center">No hay casos pendientes de revisión.</p>
+                <div class="text-center py-4">
+                    <p class="text-muted mb-3">No hay casos para mostrar.</p>
+                    <a href="{{ url_for('asesoria_gratuita') }}" class="btn btn-primary">Crear Primer Caso</a>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -204,7 +207,7 @@
                     <tbody>
                         {% for caso in ultimos_casos %}
                         <tr>
-                            <td><small>{{ caso.fecha_creacion[:16] }}</small></td>
+                            <td><small>{{ caso.fecha_creacion[:16] if caso.fecha_creacion else 'N/A' }}</small></td>
                             <td>{{ caso.nombre }}</td>
                             <td><small>{{ caso.telefono }}</small></td>
                             <td>
@@ -245,6 +248,24 @@ function seleccionarTodos() {
     }
     document.getElementById('selectAll').checked = !allChecked;
 }
+
+// Mostrar mensaje de confirmación para cambios
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            const form = this.closest('form');
+            if (form) {
+                // Mostrar mensaje de carga
+                const originalText = this.options[this.selectedIndex].text;
+                this.disabled = true;
+                
+                // Enviar formulario
+                form.submit();
+            }
+        });
+    });
+});
 </script>
 
 <style>
@@ -254,6 +275,13 @@ function seleccionarTodos() {
 .btn-group-sm .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+}
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+.card-header {
+    font-weight: 600;
 }
 </style>
 {% endblock %}

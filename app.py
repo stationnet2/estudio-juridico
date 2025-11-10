@@ -144,13 +144,22 @@ def gracias():
 def admin_dashboard():
     clientes = cargar_clientes()
     
-    # DEBUG: Mostrar información de clientes cargados
-    print(f"Clientes cargados: {len(clientes)}")
-    for i, cliente in enumerate(clientes):
-        print(f"Cliente {i}: ID={cliente.get('id')}, Estado={cliente.get('estado')}")
+    # DEBUG DETALLADO
+    print(f"=== DEBUG DASHBOARD ===")
+    print(f"Total clientes cargados: {len(clientes)}")
     
-    # Filtrar casos pendientes (nuevos y en revisión)
-    casos_pendientes = [c for c in clientes if c.get('estado','').strip().lower() in ['nuevo','en_revision']]
+    for i, cliente in enumerate(clientes):
+        estado = cliente.get('estado', 'NO TIENE ESTADO')
+        id_val = cliente.get('id', 'NO TIENE ID')
+        nombre = cliente.get('nombre', 'NO TIENE NOMBRE')
+        print(f"Cliente {i}: ID={id_val}, Estado='{estado}', Nombre='{nombre}'")
+    
+    # Filtrar casos pendientes - MOSTRAR MÁS CASOS PARA PRUEBAS
+    casos_pendientes = [c for c in clientes if c.get('estado','').strip().lower() in ['nuevo','en_revision', 'apto', 'contactado']]
+    
+    print(f"Casos pendientes encontrados: {len(casos_pendientes)}")
+    print("=== FIN DEBUG ===")
+    
     ultimos_casos = sorted(clientes, key=lambda x: x.get('fecha_creacion',''), reverse=True)[:10]
 
     return render_template(
