@@ -98,7 +98,7 @@
                     <tbody>
                         {% for caso in casos_pendientes %}
                         <tr>
-                            <td><strong>#{{ caso._id }}</strong></td>
+                            <td><strong>#{{ caso.id }}</strong></td>
                             <td>{{ caso.nombre }}</td>
                             <td>
                                 <small>{{ caso.email }}</small><br>
@@ -119,15 +119,15 @@
                             <td>
                                 {% set prioridad = caso.prioridad %}
                                 {% if prioridad == 5 %}
-                                <span class="badge bg-danger">Máxima</span>
+                                    <span class="badge bg-danger">Máxima</span>
                                 {% elif prioridad == 4 %}
-                                <span class="badge bg-warning">Alta</span>
+                                    <span class="badge bg-warning">Alta</span>
                                 {% elif prioridad == 3 %}
-                                <span class="badge bg-info">Media</span>
+                                    <span class="badge bg-info">Media</span>
                                 {% elif prioridad == 2 %}
-                                <span class="badge bg-secondary">Baja</span>
+                                    <span class="badge bg-secondary">Baja</span>
                                 {% else %}
-                                <span class="badge bg-light text-dark">Mínima</span>
+                                    <span class="badge bg-light text-dark">Mínima</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -136,7 +136,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="/admin/caso/{{ caso._id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
+                                <a href="/admin/caso/{{ caso.id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -174,14 +174,10 @@
                             <td>{{ caso.nombre }}</td>
                             <td><small>{{ caso.telefono }}</small></td>
                             <td>
-                                <span class="badge bg-light text-dark">
-                                    {{ caso.tipo_accidente }}
-                                </span>
+                                <span class="badge bg-light text-dark">{{ caso.tipo_accidente }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ obtener_color_estado(caso.estado) }}">
-                                    {{ caso.estado }}
-                                </span>
+                                <span class="badge {{ obtener_color_estado(caso.estado) }}">{{ caso.estado }}</span>
                             </td>
                         </tr>
                         {% endfor %}
