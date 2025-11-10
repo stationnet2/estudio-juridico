@@ -112,6 +112,8 @@ def calcular_prioridad(cliente):
 
 def obtener_color_estado(estado):
     try:
+        # Convertir a string y manejar None
+        estado_str = str(estado) if estado is not None else ''
         colores = {
             'nuevo': 'bg-primary',
             'en_revision': 'bg-warning',
@@ -119,13 +121,15 @@ def obtener_color_estado(estado):
             'descartado': 'bg-secondary',
             'contactado': 'bg-info'
         }
-        return colores.get(estado.lower().strip(), 'bg-secondary') if estado else 'bg-secondary'
+        return colores.get(estado_str.lower().strip(), 'bg-secondary')
     except Exception as e:
         print(f"❌ ERROR obteniendo color estado: {e}")
         return 'bg-secondary'
 
 def obtener_color_puntuacion(p):
     try:
+        if p is None:
+            return 'bg-secondary'
         if p >= 7: return 'bg-success'
         if p >= 4: return 'bg-warning'
         return 'bg-danger'
@@ -219,11 +223,11 @@ def admin_dashboard():
             casos_pendientes=casos_pendientes,
             ultimos_casos=ultimos_casos,
             total_casos=len(clientes),
-            casos_nuevos=len([c for c in clientes if c.get('estado','').strip().lower() == 'nuevo']),
-            casos_aptos=len([c for c in clientes if c.get('estado','').strip().lower() == 'apto']),
-            casos_revision=len([c for c in clientes if c.get('estado','').strip().lower() == 'en_revision']),
-            casos_descartados=len([c for c in clientes if c.get('estado','').strip().lower() == 'descartado']),
-            casos_contactados=len([c for c in clientes if c.get('estado','').strip().lower() == 'contactado']),
+            casos_nuevos=len([c for c in clientes if str(c.get('estado','')).strip().lower() == 'nuevo']),
+            casos_aptos=len([c for c in clientes if str(c.get('estado','')).strip().lower() == 'apto']),
+            casos_revision=len([c for c in clientes if str(c.get('estado','')).strip().lower() == 'en_revision']),
+            casos_descartados=len([c for c in clientes if str(c.get('estado','')).strip().lower() == 'descartado']),
+            casos_contactados=len([c for c in clientes if str(c.get('estado','')).strip().lower() == 'contactado']),
             obtener_color_estado=obtener_color_estado,
             obtener_color_puntuacion=obtener_color_puntuacion
         )
