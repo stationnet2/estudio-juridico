@@ -1,0 +1,40 @@
+[
+  {
+    "nombre": "adrian lima",
+    "email": "adrian1515@hotmail.com",
+    "telefono": "1122506139",
+    "tipo_accidente": "vehicular",
+    "rol_usuario": "victima",
+    "fecha_accidente": "2024-07-01",
+    "descripcion": "me encontraba estacionado y me chocan de atras",
+    "hay_lesiones": "on",
+    "hay_danos_materiales": "on",
+    "tiene_seguro": "on",
+    "seguro_propio": "",
+    "seguro_contrario": "sancor",
+    "id": 1,
+    "fecha_creacion": "2025-10-27 19:51:11",
+    "puntuacion_viabilidad": 9,
+    "estado": "apto",
+    "prioridad": 5
+  },
+  {
+    "nombre": "juan perez",
+    "email": "adrian1515@hotmail.com",
+    "telefono": "(0221) 478-2549",
+    "tipo_accidente": "peatonal",
+    "rol_usuario": "victima",
+    "fecha_accidente": "2025-04-05",
+    "descripcion": "estaba cruzando la esquina de 7 y 48 y fui atropellado por un micro, vino la ambulancia y me llevo al hospital san martin dodne me diagnosticaron lesiones graves",
+    "hay_lesiones": "on",
+    "hay_danos_materiales": null,
+    "tiene_seguro": "on",
+    "seguro_propio": "",
+    "seguro_contrario": "rivadavia",
+    "id": 2,
+    "fecha_creacion": "2025-10-28 19:26:04",
+    "puntuacion_viabilidad": 8,
+    "estado": "apto",
+    "prioridad": 5
+  }
+]

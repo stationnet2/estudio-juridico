@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 text-primary mb-4">Asesoría Legal Gratuita en Accidentes de Tránsito</h1>
+        <p class="lead mb-4">Nuestros abogados especializados evaluarán su caso sin costo. Obtenga asesoramiento profesional inmediato.</p>
+        
+        <!-- Banner WhatsApp -->
+        <div class="alert alert-success d-flex align-items-center justify-content-center mb-4">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+                 alt="WhatsApp" width="30" height="30" class="me-3">
+            <div>
+                <strong>¿Urgencia? Escríbenos por WhatsApp</strong>
+                <br>
+                <a href="https://wa.me/5492212020976?text=Hola,%20acabo%20de%20tener%20un%20accidente%20y%20necesito%20ayuda%20inmediata" 
+                   target="_blank" 
+                   class="btn btn-success btn-sm mt-1">
+                    +54 9 2212 02-0976
+                </a>
+            </div>
+        </div>
+        
+        <div class="row mb-5">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">🚗 Accidentes Vehiculares</h5>
+                        <p class="card-text">Choques, colisiones, vuelcos y todo tipo de accidentes entre vehículos.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">🚶 Accidentes Peatonales</h5>
+                        <p class="card-text">Atropellos y accidentes donde están involucrados peatones.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">🏍️ Motociclistas</h5>
+                        <p class="card-text">Accidentes específicos de motocicletas y ciclomotores.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('asesoria_gratuita') }}" class="btn btn-primary btn-lg px-5 py-3">Solicitar Asesoría Gratuita</a>
+            <a href="/admin" class="btn btn-outline-secondary btn-lg ms-2">Panel de Administración</a>
+        </div>
+
+        <div class="mt-5">
+            <h3 class="mb-3">¿Por qué elegirnos?</h3>
+            <div class="row text-start">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li>✅ <strong>Asesoramiento gratuito</strong> sin compromiso</li>
+                        <li>✅ <strong>Abogados especializados</strong> en tránsito</li>
+                        <li>✅ <strong>Evaluación inmediata</strong> de su caso</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li>✅ <strong>Honorarios</strong> solo si ganamos</li>
+                        <li>✅ <strong>Atención personalizada</strong> 24/7</li>
+                        <li>✅ <strong>Experiencia</strong> comprobada</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

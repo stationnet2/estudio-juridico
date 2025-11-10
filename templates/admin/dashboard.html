@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-primary">Panel de Administración</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">Volver al Sitio</a>
+</div>
+
+<!-- Tarjeta WhatsApp Admin -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h6 class="mb-0">📱 Contacto WhatsApp</h6>
+    </div>
+    <div class="card-body text-center">
+        <p class="small mb-2">Número para clientes:</p>
+        <a href="https://wa.me/5492212020976" 
+           target="_blank" 
+           class="btn btn-success btn-sm w-100 mb-2">
+            +54 9 2212 02-0976
+        </a>
+        <small class="text-muted">Haga clic para contactar por WhatsApp</small>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ total_casos }}</h4>
+                <p class="card-text">Total Casos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ casos_nuevos }}</h4>
+                <p class="card-text">Nuevos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ casos_revision }}</h4>
+                <p class="card-text">En Revisión</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ casos_aptos }}</h4>
+                <p class="card-text">Aptos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-secondary">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ casos_descartados }}</h4>
+                <p class="card-text">Descartados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-dark">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ casos_contactados }}</h4>
+                <p class="card-text">Contactados</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Casos para Revisar -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">📋 Casos para Revisar ({{ casos_pendientes|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if casos_pendientes %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Tipo</th>
+                            <th>Puntuación</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for caso in casos_pendientes %}
+                        <tr>
+                            <td><strong>#{{ caso.id }}</strong></td>
+                            <td>{{ caso.nombre }}</td>
+                            <td>
+                                <small>{{ caso.email }}</small><br>
+                                <small>{{ caso.telefono }}</small>
+                            </td>
+                            <td>
+                                {% if caso.tipo_accidente == 'vehicular' %}🚗
+                                {% elif caso.tipo_accidente == 'peatonal' %}🚶
+                                {% elif caso.tipo_accidente == 'motocicleta' %}🏍️
+                                {% else %}🚌{% endif %}
+                                {{ caso.tipo_accidente }}
+                            </td>
+                            <td>
+                                <span class="badge {{ obtener_color_puntuacion(caso.puntuacion_viabilidad) }}">
+                                    {{ caso.puntuacion_viabilidad }}/10
+                                </span>
+                            </td>
+                            <td>
+                                {% set prioridad = caso.prioridad %}
+                                {% if prioridad == 5 %}
+                                <span class="badge bg-danger">Máxima</span>
+                                {% elif prioridad == 4 %}
+                                <span class="badge bg-warning">Alta</span>
+                                {% elif prioridad == 3 %}
+                                <span class="badge bg-info">Media</span>
+                                {% elif prioridad == 2 %}
+                                <span class="badge bg-secondary">Baja</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">Mínima</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {{ obtener_color_estado(caso.estado) }}">
+                                    {{ caso.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/admin/caso/{{ caso.id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center">No hay casos pendientes de revisión.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Últimos Casos -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">🕒 Últimos Casos Recibidos</h5>
+    </div>
+    <div class="card-body">
+        {% if ultimos_casos %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for caso in ultimos_casos %}
+                        <tr>
+                            <td><small>{{ caso.fecha_creacion[:16] }}</small></td>
+                            <td>{{ caso.nombre }}</td>
+                            <td><small>{{ caso.telefono }}</small></td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ caso.tipo_accidente }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {{ obtener_color_estado(caso.estado) }}">
+                                    {{ caso.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center">No hay casos registrados.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

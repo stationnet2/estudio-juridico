@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <div class="alert alert-success mb-4">
+            <h2 class="alert-heading">¡Gracias por contactarnos!</h2>
+            <p class="mb-3">Hemos recibido su consulta. Un abogado especializado se contactará dentro de las próximas 24 horas.</p>
+        </div>
+
+        <!-- Opción WhatsApp -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">¿Es una urgencia?</h5>
+                <p class="card-text">Puede contactarnos directamente por WhatsApp para una respuesta inmediata</p>
+                <a href="https://wa.me/5492212020976?text=Hola,%20acabo%20de%20enviar%20mi%20consulta%20y%20necesito%20ayuda%20inmediata" 
+                   target="_blank" 
+                   class="btn btn-success btn-lg">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+                         alt="WhatsApp" width="24" height="24" class="me-2">
+                    Contactar por WhatsApp
+                </a>
+            </div>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al Inicio</a>
+    </div>
+</div>
+{% endblock %}

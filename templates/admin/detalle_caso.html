@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-primary">Caso #{{ caso.id }}</h1>
+    <div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">← Volver al Panel</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Información del Cliente -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📋 Información del Cliente</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre:</strong> {{ caso.nombre }}</p>
+                        <p><strong>Email:</strong> 
+                            <a href="mailto:{{ caso.email }}">{{ caso.email }}</a>
+                        </p>
+                        <p><strong>Teléfono:</strong> 
+                            <a href="tel:{{ caso.telefono }}">{{ caso.telefono }}</a>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Fecha de creación:</strong> {{ caso.fecha_creacion }}</p>
+                        <p><strong>Estado actual:</strong> 
+                            <span class="badge {{ obtener_color_estado(caso.estado) }}">
+                                {{ caso.estado }}
+                            </span>
+                        </p>
+                        <p><strong>Prioridad:</strong> 
+                            {% set prioridad = caso.prioridad %}
+                            {% if prioridad == 5 %}
+                            <span class="badge bg-danger">Máxima</span>
+                            {% elif prioridad == 4 %}
+                            <span class="badge bg-warning">Alta</span>
+                            {% elif prioridad == 3 %}
+                            <span class="badge bg-info">Media</span>
+                            {% elif prioridad == 2 %}
+                            <span class="badge bg-secondary">Baja</span>
+                            {% else %}
+                            <span class="badge bg-light text-dark">Mínima</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Accidente -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">🚗 Información del Accidente</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Tipo de accidente:</strong> 
+                            {% if caso.tipo_accidente == 'vehicular' %}🚗 Vehicular
+                            {% elif caso.tipo_accidente == 'peatonal' %}🚶 Peatonal
+                            {% elif caso.tipo_accidente == 'motocicleta' %}🏍️ Motocicleta
+                            {% else %}🚌 Transporte Público{% endif %}
+                        </p>
+                        <p><strong>Rol del cliente:</strong> 
+                            {% if caso.rol_usuario == 'victima' %}👤 Víctima/Afectado
+                            {% else %}🚦 Causante/Responsable{% endif %}
+                        </p>
+                        <p><strong>Fecha del accidente:</strong> {{ caso.fecha_accidente }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Lesiones personales:</strong> 
+                            <span class="badge {{ 'bg-danger' if caso.hay_lesiones == 'on' else 'bg-secondary' }}">
+                                {{ 'SÍ' if caso.hay_lesiones == 'on' else 'NO' }}
+                            </span>
+                        </p>
+                        <p><strong>Daños materiales:</strong> 
+                            <span class="badge {{ 'bg-warning' if caso.hay_danos_materiales == 'on' else 'bg-secondary' }}">
+                                {{ 'SÍ' if caso.hay_danos_materiales == 'on' else 'NO' }}
+                            </span>
+                        </p>
+                        <p><strong>Seguros involucrados:</strong> 
+                            <span class="badge {{ 'bg-success' if caso.tiene_seguro == 'on' else 'bg-secondary' }}">
+                                {{ 'SÍ' if caso.tiene_seguro == 'on' else 'NO' }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                {% if caso.seguro_propio or caso.seguro_contrario %}
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6>🏢 Información de Seguros:</h6>
+                    <p><strong>Seguro propio:</strong> {{ caso.seguro_propio or 'No especificado' }}</p>
+                    <p><strong>Seguro contrario:</strong> {{ caso.seguro_contrario or 'No especificado' }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Descripción del Accidente -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📝 Descripción del Accidente</h5>
+            </div>
+            <div class="card-body">
+                <div class="bg-light p-3 rounded">
+                    <p style="white-space: pre-wrap; line-height: 1.6;">{{ caso.descripcion }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Evaluación del Caso -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">⚡ Evaluación del Caso</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Puntuación de viabilidad:</label>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar {{ obtener_color_puntuacion(caso.puntuacion_viabilidad) }}" 
+                             style="width: {{ caso.puntuacion_viabilidad * 10 }}%">
+                            <strong>{{ caso.puntuacion_viabilidad }}/10</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Estado del caso:</label>
+                    <div>
+                        <span class="badge {{ obtener_color_estado(caso.estado) }} mb-2" style="font-size: 1em;">
+                            {{ caso.estado|upper }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <small>
+                        <strong>Evaluación automática:</strong><br>
+                        {% if caso.puntuacion_viabilidad >= 8 %}
+                        ✅ <strong>Caso de alta viabilidad</strong><br>Recomendado para seguimiento inmediato
+                        {% elif caso.puntuacion_viabilidad >= 5 %}
+                        ⚠️ <strong>Caso de viabilidad media</strong><br>Requiere revisión detallada
+                        {% else %}
+                        ❌ <strong>Caso de baja viabilidad</strong><br>Posible descarte
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">🎯 Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="tel:{{ caso.telefono }}" class="btn btn-success btn-sm">
+                        📞 Llamar al cliente
+                    </a>
+                    <a href="https://wa.me/549{{ caso.telefono|replace(' ', '')|replace('+', '')|replace('-', '') }}?text=Hola {{ caso.nombre }}, soy del estudio jurídico. Vi su consulta sobre el accidente y me gustaría ayudarle." 
+                       target="_blank" 
+                       class="btn btn-success btn-sm">
+                        📱 WhatsApp al cliente
+                    </a>
+                    <a href="mailto:{{ caso.email }}?subject=Estudio Jurídico - Consulta sobre accidente&body=Hola {{ caso.nombre }},%0D%0A%0D%0AHe revisado su consulta sobre el accidente y me gustaría programar una reunión para evaluar su caso.%0D%0A%0D%0ASaludos cordiales" 
+                       class="btn btn-primary btn-sm">
+                        ✉️ Enviar email
+                    </a>
+                </div>
+
+                <!-- Formulario de actualización -->
+                <form method="POST" action="/admin/actualizar-caso/{{ caso.id }}" class="mt-3">
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Actualizar estado:</label>
+                        <select name="estado" class="form-select form-select-sm">
+                            <option value="nuevo" {{ 'selected' if caso.estado == 'nuevo' }}>Nuevo</option>
+                            <option value="en_revision" {{ 'selected' if caso.estado == 'en_revision' }}>En Revisión</option>
+                            <option value="apto" {{ 'selected' if caso.estado == 'apto' }}>Apto</option>
+                            <option value="descartado" {{ 'selected' if caso.estado == 'descartado' }}>Descartado</option>
+                            <option value="contactado" {{ 'selected' if caso.estado == 'contactado' }}>Contactado</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Prioridad:</label>
+                        <select name="prioridad" class="form-select form-select-sm">
+                            <option value="1" {{ 'selected' if caso.prioridad == 1 }}>Mínima</option>
+                            <option value="2" {{ 'selected' if caso.prioridad == 2 }}>Baja</option>
+                            <option value="3" {{ 'selected' if caso.prioridad == 3 }}>Media</option>
+                            <option value="4" {{ 'selected' if caso.prioridad == 4 }}>Alta</option>
+                            <option value="5" {{ 'selected' if caso.prioridad == 5 }}>Máxima</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Observaciones:</label>
+                        <textarea name="observaciones" class="form-control form-control-sm" rows="3" 
+                                  placeholder="Agregar observaciones del abogado...">{{ caso.observaciones_abogado or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm w-100">💾 Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
