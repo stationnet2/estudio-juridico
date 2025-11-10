@@ -18,8 +18,9 @@ client = MongoClient(MONGO_URI)
 db = client["estudio_juridico"]
 coleccion = db["clientes"]
 
-
-# ✅ GUARDAR CLIENTE
+# =========================
+# GUARDAR CLIENTE
+# =========================
 def guardar_cliente(cliente_data):
     try:
         cliente_data['fecha_creacion'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -34,8 +35,9 @@ def guardar_cliente(cliente_data):
         print("❌ ERROR guardando:", e)
         return False
 
-
-# ✅ CARGAR CLIENTES
+# =========================
+# CARGAR CLIENTES
+# =========================
 def cargar_clientes():
     try:
         clientes = list(coleccion.find({}, {"_id": 0}))
@@ -44,8 +46,9 @@ def cargar_clientes():
         print("❌ ERROR cargando clientes:", e)
         return []
 
-
-# ✅ SISTEMA DE PUNTUACIÓN Y ESTADOS
+# =========================
+# SISTEMA DE PUNTUACIÓN Y ESTADOS
+# =========================
 def calcular_viabilidad(cliente):
     p = 0
     if cliente.get('hay_lesiones') == 'on': p += 3
@@ -55,7 +58,6 @@ def calcular_viabilidad(cliente):
     if cliente.get('tipo_accidente') == 'peatonal': p += 1
     return min(10, p)
 
-
 def evaluar_caso_automatico(cliente):
     p = calcular_viabilidad(cliente)
     if p >= 8 or (cliente.get('hay_lesiones') == 'on' and p >= 7):
@@ -63,7 +65,6 @@ def evaluar_caso_automatico(cliente):
     if p >= 5 or cliente.get('hay_danos_materiales') == 'on' or cliente.get('tiene_seguro') == 'on':
         return 'en_revision'
     return 'descartado'
-
 
 def calcular_prioridad(cliente):
     estado = evaluar_caso_automatico(cliente)
@@ -73,7 +74,6 @@ def calcular_prioridad(cliente):
     if estado == 'nuevo': return 2
     return 1
 
-
 def obtener_color_estado(estado):
     colores = {
         'nuevo': 'bg-primary',
@@ -82,21 +82,19 @@ def obtener_color_estado(estado):
         'descartado': 'bg-secondary',
         'contactado': 'bg-info'
     }
-    return colores.get(estado, 'bg-secondary')
-
+    return colores.get(estado.lower().strip(), 'bg-secondary') if estado else 'bg-secondary'
 
 def obtener_color_puntuacion(p):
     if p >= 7: return 'bg-success'
     if p >= 4: return 'bg-warning'
     return 'bg-danger'
 
-
-# ✅ RUTAS ==============================
-
+# =========================
+# RUTAS
+# =========================
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/asesoria-gratuita', methods=['GET', 'POST'])
 def asesoria_gratuita():
@@ -128,19 +126,28 @@ def asesoria_gratuita():
 
     return render_template('asesoria.html')
 
-
 @app.route('/gracias')
 def gracias():
     return render_template('gracias.html')
 
-
+# =========================
+# DASHBOARD ADMIN
+# =========================
 @app.route('/admin/')
 def admin_dashboard():
     clientes = cargar_clientes()
 
-    casos_pendientes = [c for c in clientes if c.get('estado') in ['nuevo', 'en_revision']]
+    # ✅ Filtrar casos pendientes robustamente
+    casos_pendientes = [
+        c for c in clientes
+        if c.get('estado', '').strip().lower() in ['nuevo', 'en_revision']
+    ]
 
-    ultimos_casos = sorted(clientes, key=lambda x: x['fecha_creacion'], reverse=True)[:10]
+    ultimos_casos = sorted(
+        clientes, 
+        key=lambda x: x.get('fecha_creacion', ''), 
+        reverse=True
+    )[:10]
 
     return render_template(
         'admin/dashboard.html',
@@ -148,16 +155,18 @@ def admin_dashboard():
         casos_pendientes=casos_pendientes,
         ultimos_casos=ultimos_casos,
         total_casos=len(clientes),
-        casos_nuevos=len([c for c in clientes if c.get('estado') == 'nuevo']),
-        casos_aptos=len([c for c in clientes if c.get('estado') == 'apto']),
-        casos_revision=len([c for c in clientes if c.get('estado') == 'en_revision']),
-        casos_descartados=len([c for c in clientes if c.get('estado') == 'descartado']),
-        casos_contactados=len([c for c in clientes if c.get('estado') == 'contactado']),
+        casos_nuevos=len([c for c in clientes if c.get('estado','').strip().lower() == 'nuevo']),
+        casos_aptos=len([c for c in clientes if c.get('estado','').strip().lower() == 'apto']),
+        casos_revision=len([c for c in clientes if c.get('estado','').strip().lower() == 'en_revision']),
+        casos_descartados=len([c for c in clientes if c.get('estado','').strip().lower() == 'descartado']),
+        casos_contactados=len([c for c in clientes if c.get('estado','').strip().lower() == 'contactado']),
         obtener_color_estado=obtener_color_estado,
         obtener_color_puntuacion=obtener_color_puntuacion
     )
 
-
+# =========================
+# DETALLE DE CASO
+# =========================
 @app.route('/admin/caso/<int:id>')
 def detalle_caso(id):
     clientes = cargar_clientes()
@@ -173,7 +182,6 @@ def detalle_caso(id):
         obtener_color_puntuacion=obtener_color_puntuacion
     )
 
-
 @app.route('/admin/actualizar-caso/<int:id>', methods=['POST'])
 def actualizar(id):
     nuevos_datos = {
@@ -186,7 +194,8 @@ def actualizar(id):
 
     return redirect(f"/admin/caso/{id}")
 
-
-# ✅ EJECUTAR SERVIDOR
+# =========================
+# EJECUTAR SERVIDOR
+# =========================
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
