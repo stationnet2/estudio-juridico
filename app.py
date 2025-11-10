@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'clave-secreta-estudio-juridico-2024'
 
-# ✅ Conexión a MongoDB Atlas
-MONGO_URI = "mongodb+srv://stationnet2:chicha1330@cluster0.lnook.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(MONGO_URI)
+# ✅ Tomar la URI desde Render
+MONGO_URI = os.environ.get("MONGO_URI")
 
-# ✅ Base de datos y colección
+# ✅ Fallback para ejecutar localmente
+if not MONGO_URI:
+    MONGO_URI = "mongodb+srv://stationnet2:chicha1330@cluster0.hvj9lvn.mongodb.net/?appName=Cluster0"
+
+# ✅ Conexión a MongoDB Atlas
+client = MongoClient(MONGO_URI)
 db = client["estudio_juridico"]
 coleccion = db["clientes"]
 
@@ -25,7 +30,6 @@ def guardar_cliente(cliente_data):
 
         coleccion.insert_one(cliente_data)
         return True
-
     except Exception as e:
         print("❌ ERROR guardando:", e)
         return False
@@ -41,28 +45,7 @@ def cargar_clientes():
         return []
 
 
-# ✅ BUSCAR POR ID
-def obtener_caso_por_id(id):
-    try:
-        caso = coleccion.find_one({"id": id}, {"_id": 0})
-        return caso
-    except:
-        return None
-
-
-# ✅ ACTUALIZAR CASO
-def actualizar_caso(id, nuevos_datos):
-    try:
-        coleccion.update_one({"id": id}, {"$set": nuevos_datos})
-        return True
-    except:
-        return False
-
-
-# ============================================
-#   SISTEMA DE PUNTUACIÓN Y ESTADOS
-# ============================================
-
+# ✅ SISTEMA DE PUNTUACIÓN Y ESTADOS
 def calcular_viabilidad(cliente):
     p = 0
     if cliente.get('hay_lesiones') == 'on': p += 3
@@ -108,9 +91,7 @@ def obtener_color_puntuacion(p):
     return 'bg-danger'
 
 
-# ============================================
-#                  RUTAS
-# ============================================
+# ✅ RUTAS ==============================
 
 @app.route('/')
 def index():
@@ -121,7 +102,7 @@ def index():
 def asesoria_gratuita():
     if request.method == 'POST':
         cliente_data = {
-            "id": int(datetime.now().timestamp()),  # ✅ Genera ID único
+            "id": int(datetime.now().timestamp()),  # ID único
             'nombre': request.form.get('nombre'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
@@ -153,7 +134,6 @@ def gracias():
     return render_template('gracias.html')
 
 
-# ✅ DASHBOARD
 @app.route('/admin/')
 def admin_dashboard():
     clientes = cargar_clientes()
@@ -178,7 +158,6 @@ def admin_dashboard():
     )
 
 
-# ✅ ✅ RUTA DE DETALLE DE CASO
 @app.route('/admin/caso/<int:id>')
 def detalle_caso(id):
     clientes = cargar_clientes()
@@ -195,7 +174,6 @@ def detalle_caso(id):
     )
 
 
-# ✅ ✅ RUTA PARA ACTUALIZAR CASO
 @app.route('/admin/actualizar-caso/<int:id>', methods=['POST'])
 def actualizar(id):
     nuevos_datos = {
@@ -209,8 +187,6 @@ def actualizar(id):
     return redirect(f"/admin/caso/{id}")
 
 
-# ============================================
-#           EJECUTAR SERVIDOR
-# ============================================
+# ✅ EJECUTAR SERVIDOR
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
