@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 from pymongo import MongoClient
 import os
+from bson import ObjectId
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'clave-secreta-estudio-juridico-2024'
@@ -25,6 +26,11 @@ def guardar_cliente(cliente_data):
         cliente_data['estado'] = evaluar_caso_automatico(cliente_data)
         cliente_data['prioridad'] = calcular_prioridad(cliente_data)
         cliente_data['observaciones_abogado'] = ""
+        
+        # Asegurar que siempre tenga un ID
+        if 'id' not in cliente_data:
+            cliente_data['id'] = int(datetime.now().timestamp())
+            
         coleccion.insert_one(cliente_data)
         return True
     except Exception as e:
@@ -33,7 +39,18 @@ def guardar_cliente(cliente_data):
 
 def cargar_clientes():
     try:
-        clientes = list(coleccion.find({}, {"_id": 0}))
+        # Proyectar _id también para usarlo como fallback
+        clientes = list(coleccion.find({}))
+        
+        # Normalizar los datos para asegurar que siempre tengan ID
+        for cliente in clientes:
+            # Si no tiene 'id', usar el _id de MongoDB como string
+            if 'id' not in cliente:
+                cliente['id'] = str(cliente['_id'])
+            # Convertir ObjectId a string para que sea serializable
+            if '_id' in cliente and isinstance(cliente['_id'], ObjectId):
+                cliente['_id'] = str(cliente['_id'])
+                
         return clientes
     except Exception as e:
         print("ERROR cargando clientes:", e)
@@ -126,6 +143,13 @@ def gracias():
 @app.route('/admin/')
 def admin_dashboard():
     clientes = cargar_clientes()
+    
+    # DEBUG: Mostrar información de clientes cargados
+    print(f"Clientes cargados: {len(clientes)}")
+    for i, cliente in enumerate(clientes):
+        print(f"Cliente {i}: ID={cliente.get('id')}, Estado={cliente.get('estado')}")
+    
+    # Filtrar casos pendientes (nuevos y en revisión)
     casos_pendientes = [c for c in clientes if c.get('estado','').strip().lower() in ['nuevo','en_revision']]
     ultimos_casos = sorted(clientes, key=lambda x: x.get('fecha_creacion',''), reverse=True)[:10]
 
@@ -147,65 +171,113 @@ def admin_dashboard():
 # =========================
 # DETALLE Y ACTUALIZACIÓN DE CASO
 # =========================
-@app.route('/admin/caso/<int:id>')
+@app.route('/admin/caso/<id>')
 def detalle_caso(id):
-    clientes = cargar_clientes()
-    caso = next((c for c in clientes if c['id'] == id), None)
-    if not caso:
-        return "Caso no encontrado", 404
-    return render_template(
-        'admin/detalle_caso.html',
-        caso=caso,
-        obtener_color_estado=obtener_color_estado,
-        obtener_color_puntuacion=obtener_color_puntuacion
-    )
+    try:
+        # Intentar buscar por ID numérico primero
+        try:
+            id_num = int(id)
+            caso = coleccion.find_one({"id": id_num})
+        except ValueError:
+            # Si no es numérico, buscar por _id de MongoDB
+            caso = coleccion.find_one({"_id": ObjectId(id)})
+        
+        if not caso:
+            return "Caso no encontrado", 404
+            
+        # Convertir ObjectId a string para el template
+        if '_id' in caso and isinstance(caso['_id'], ObjectId):
+            caso['_id'] = str(caso['_id'])
+            
+        return render_template(
+            'admin/detalle_caso.html',
+            caso=caso,
+            obtener_color_estado=obtener_color_estado,
+            obtener_color_puntuacion=obtener_color_puntuacion
+        )
+    except Exception as e:
+        print(f"Error en detalle_caso: {e}")
+        return f"Error al cargar el caso: {str(e)}", 500
 
-@app.route('/admin/actualizar-caso/<int:id>', methods=['POST'])
+@app.route('/admin/actualizar-caso/<id>', methods=['POST'])
 def actualizar(id):
-    nuevos_datos = {
-        "estado": request.form.get("estado"),
-        "prioridad": int(request.form.get("prioridad")),
-        "observaciones_abogado": request.form.get("observaciones")
-    }
-    coleccion.update_one({"id": id}, {"$set": nuevos_datos})
-    return redirect(f"/admin/caso/{id}")
+    try:
+        nuevos_datos = {
+            "estado": request.form.get("estado"),
+            "prioridad": int(request.form.get("prioridad")),
+            "observaciones_abogado": request.form.get("observaciones")
+        }
+        
+        # Intentar actualizar por ID numérico primero
+        try:
+            id_num = int(id)
+            coleccion.update_one({"id": id_num}, {"$set": nuevos_datos})
+        except ValueError:
+            # Si no es numérico, actualizar por _id de MongoDB
+            coleccion.update_one({"_id": ObjectId(id)}, {"$set": nuevos_datos})
+            
+        return redirect(f"/admin/caso/{id}")
+    except Exception as e:
+        flash(f"Error al actualizar caso: {str(e)}", "error")
+        return redirect(f"/admin/caso/{id}")
 
 # =========================
 # BORRAR CASO
 # =========================
-@app.route('/admin/borrar-caso/<int:id>', methods=['POST'])
+@app.route('/admin/borrar-caso/<id>', methods=['POST'])
 def borrar_caso(id):
-    resultado = coleccion.delete_one({"id": id})
-    if resultado.deleted_count:
-        flash(f"Caso #{id} eliminado correctamente.", "success")
-    else:
-        flash(f"No se encontró el caso #{id}.", "error")
+    try:
+        # Intentar eliminar por ID numérico primero
+        try:
+            id_num = int(id)
+            resultado = coleccion.delete_one({"id": id_num})
+        except ValueError:
+            # Si no es numérico, eliminar por _id de MongoDB
+            resultado = coleccion.delete_one({"_id": ObjectId(id)})
+            
+        if resultado.deleted_count:
+            flash(f"Caso #{id} eliminado correctamente.", "success")
+        else:
+            flash(f"No se encontró el caso #{id}.", "error")
+    except Exception as e:
+        flash(f"Error al eliminar caso: {str(e)}", "error")
+        
     return redirect(url_for('admin_dashboard'))
 
 # =========================
 # NUEVAS RUTAS PARA DASHBOARD MEJORADO
 # =========================
-@app.route('/admin/cambiar-prioridad/<int:id>', methods=['POST'])
+@app.route('/admin/cambiar-prioridad/<id>', methods=['POST'])
 def cambiar_prioridad(id):
     try:
         nueva_prioridad = int(request.form.get('prioridad'))
-        coleccion.update_one(
-            {"id": id}, 
-            {"$set": {"prioridad": nueva_prioridad}}
-        )
+        
+        # Intentar actualizar por ID numérico primero
+        try:
+            id_num = int(id)
+            coleccion.update_one({"id": id_num}, {"$set": {"prioridad": nueva_prioridad}})
+        except ValueError:
+            # Si no es numérico, actualizar por _id de MongoDB
+            coleccion.update_one({"_id": ObjectId(id)}, {"$set": {"prioridad": nueva_prioridad}})
+            
         flash(f"Prioridad del caso #{id} actualizada correctamente", "success")
     except Exception as e:
         flash(f"Error al actualizar prioridad: {str(e)}", "error")
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/cambiar-estado/<int:id>', methods=['POST'])
+@app.route('/admin/cambiar-estado/<id>', methods=['POST'])
 def cambiar_estado(id):
     try:
         nuevo_estado = request.form.get('estado')
-        coleccion.update_one(
-            {"id": id}, 
-            {"$set": {"estado": nuevo_estado}}
-        )
+        
+        # Intentar actualizar por ID numérico primero
+        try:
+            id_num = int(id)
+            coleccion.update_one({"id": id_num}, {"$set": {"estado": nuevo_estado}})
+        except ValueError:
+            # Si no es numérico, actualizar por _id de MongoDB
+            coleccion.update_one({"_id": ObjectId(id)}, {"$set": {"estado": nuevo_estado}})
+            
         flash(f"Estado del caso #{id} actualizado a {nuevo_estado}", "success")
     except Exception as e:
         flash(f"Error al actualizar estado: {str(e)}", "error")
@@ -216,14 +288,53 @@ def eliminar_multiples_casos():
     try:
         casos_ids = request.form.getlist('casos_seleccionados')
         if casos_ids:
-            # Convertir a enteros
-            casos_ids = [int(id) for id in casos_ids]
-            resultado = coleccion.delete_many({"id": {"$in": casos_ids}})
-            flash(f"{resultado.deleted_count} casos eliminados correctamente", "success")
+            deleted_count = 0
+            for caso_id in casos_ids:
+                try:
+                    # Intentar eliminar por ID numérico primero
+                    try:
+                        id_num = int(caso_id)
+                        resultado = coleccion.delete_one({"id": id_num})
+                    except ValueError:
+                        # Si no es numérico, eliminar por _id de MongoDB
+                        resultado = coleccion.delete_one({"_id": ObjectId(caso_id)})
+                    
+                    if resultado.deleted_count:
+                        deleted_count += 1
+                except Exception as e:
+                    print(f"Error eliminando caso {caso_id}: {e}")
+                    
+            flash(f"{deleted_count} casos eliminados correctamente", "success")
         else:
             flash("No se seleccionaron casos para eliminar", "warning")
     except Exception as e:
         flash(f"Error al eliminar casos: {str(e)}", "error")
+    return redirect(url_for('admin_dashboard'))
+
+# =========================
+# SCRIPT DE MIGRACIÓN PARA ARREGLAR DATOS EXISTENTES
+# =========================
+@app.route('/admin/fix-data')
+def fix_data():
+    """Endpoint para arreglar datos existentes que no tienen ID"""
+    try:
+        # Encontrar todos los documentos que no tienen campo 'id'
+        documentos_sin_id = coleccion.find({"id": {"$exists": False}})
+        fixed_count = 0
+        
+        for doc in documentos_sin_id:
+            # Generar un ID basado en el timestamp
+            nuevo_id = int(datetime.now().timestamp()) + fixed_count
+            coleccion.update_one(
+                {"_id": doc["_id"]}, 
+                {"$set": {"id": nuevo_id}}
+            )
+            fixed_count += 1
+            
+        flash(f"Se arreglaron {fixed_count} documentos sin ID", "success")
+    except Exception as e:
+        flash(f"Error arreglando datos: {str(e)}", "error")
+        
     return redirect(url_for('admin_dashboard'))
 
 # =========================
