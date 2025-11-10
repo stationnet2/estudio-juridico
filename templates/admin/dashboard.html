@@ -117,18 +117,15 @@
                                 </span>
                             </td>
                             <td>
-                                {% set prioridad = caso.prioridad %}
-                                {% if prioridad == 5 %}
-                                    <span class="badge bg-danger">Máxima</span>
-                                {% elif prioridad == 4 %}
-                                    <span class="badge bg-warning">Alta</span>
-                                {% elif prioridad == 3 %}
-                                    <span class="badge bg-info">Media</span>
-                                {% elif prioridad == 2 %}
-                                    <span class="badge bg-secondary">Baja</span>
-                                {% else %}
-                                    <span class="badge bg-light text-dark">Mínima</span>
-                                {% endif %}
+                                <form action="{{ url_for('cambiar_prioridad', id=caso.id) }}" method="POST">
+                                    <select name="prioridad" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="5" {% if caso.prioridad==5 %}selected{% endif %}>Máxima</option>
+                                        <option value="4" {% if caso.prioridad==4 %}selected{% endif %}>Alta</option>
+                                        <option value="3" {% if caso.prioridad==3 %}selected{% endif %}>Media</option>
+                                        <option value="2" {% if caso.prioridad==2 %}selected{% endif %}>Baja</option>
+                                        <option value="1" {% if caso.prioridad==1 %}selected{% endif %}>Mínima</option>
+                                    </select>
+                                </form>
                             </td>
                             <td>
                                 <span class="badge {{ obtener_color_estado(caso.estado) }}">
@@ -137,6 +134,10 @@
                             </td>
                             <td>
                                 <a href="/admin/caso/{{ caso.id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
+                                <form action="{{ url_for('borrar_caso', id=caso.id) }}" method="POST" style="display:inline;" 
+                                      onsubmit="return confirm('¿Seguro que desea borrar este caso?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Borrar</button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}
