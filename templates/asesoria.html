@@ -1,128 +1,134 @@
 {% extends "base.html" %}
 
+{% block title %}Asesoría Legal Gratuita - Estudio Otasevic{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <div class="text-center mb-4">
-            <h1 class="text-primary">Asesoría Legal Gratuita</h1>
-            <p class="lead">Complete el formulario y un abogado especializado evaluará su caso sin costo</p>
-        </div>
+<section class="py-5" style="background: linear-gradient(135deg, rgba(26,54,93,0.85), rgba(45,55,72,0.85)), url('https://images.unsplash.com/photo-1562072546-2d80df1e2b4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'); background-size: cover; background-position: center;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="text-center mb-5 text-light">
+                    <h1 class="fw-bold">Asesoría Legal Gratuita</h1>
+                    <p class="lead">Complete el formulario y un abogado especializado evaluará su caso sin costo</p>
+                </div>
 
-        <!-- Banner WhatsApp -->
-        <div class="alert alert-info d-flex align-items-center mb-4">
-            <div class="flex-shrink-0">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
-                     alt="WhatsApp" width="40" height="40">
-            </div>
-            <div class="flex-grow-1 ms-3">
-                <h6 class="alert-heading mb-1">¿Prefieres contactarnos directamente?</h6>
-                <p class="mb-1">Habla ahora con un abogado especializado</p>
-                <a href="https://wa.me/5492212020976?text=Hola,%20quiero%20consultar%20sobre%20un%20accidente%20de%20tránsito%20y%20necesito%20asesoramiento%20inmediato" 
-                   target="_blank" 
-                   class="btn btn-success btn-sm">
-                    📱 Chatear por WhatsApp
-                </a>
-            </div>
-        </div>
-
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0">Formulario de Asesoría</h4>
-            </div>
-            <div class="card-body p-4">
-                <form method="POST">
-                    <h5>📋 Información Personal</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Nombre Completo *</label>
-                            <input type="text" name="nombre" class="form-control" required placeholder="Ej: Juan Pérez">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Email *</label>
-                            <input type="email" name="email" class="form-control" required placeholder="Ej: juan@email.com">
-                        </div>
+                <!-- Banner WhatsApp -->
+                <div class="alert alert-info d-flex align-items-center mb-4 shadow-sm rounded-4">
+                    <div class="flex-shrink-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+                             alt="WhatsApp" width="40" height="40">
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Teléfono *</label>
-                            <input type="tel" name="telefono" class="form-control" required placeholder="Ej: +54 11 1234-5678">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Fecha del Accidente *</label>
-                            <input type="date" name="fecha_accidente" class="form-control" required>
-                        </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="alert-heading mb-1">¿Prefieres contactarnos directamente?</h6>
+                        <p class="mb-1">Habla ahora con un abogado especializado</p>
+                        <a href="https://wa.me/5492212020976?text=Hola,%20quiero%20consultar%20sobre%20un%20accidente%20de%20tránsito%20y%20necesito%20asesoramiento%20inmediato" 
+                           target="_blank" 
+                           class="btn btn-success btn-sm">
+                            📱 Chatear por WhatsApp
+                        </a>
                     </div>
+                </div>
 
-                    <h5 class="mt-4">🚗 Información del Accidente</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tipo de Accidente *</label>
-                            <select name="tipo_accidente" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="vehicular">Choque entre Vehículos</option>
-                                <option value="peatonal">Atropello a Peatón</option>
-                                <option value="motocicleta">Accidente de Motocicleta</option>
-                                <option value="transporte_publico">Accidente en Transporte Público</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Su rol en el accidente *</label>
-                            <select name="rol_usuario" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="victima">Víctima / Afectado</option>
-                                <option value="causante">Causante / Responsable</option>
-                            </select>
-                        </div>
+                <div class="card shadow-lg rounded-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h4 class="mb-0">Formulario de Asesoría</h4>
                     </div>
-
-                    <h5 class="mt-4">🔍 Detalles del Caso</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="hay_lesiones" class="form-check-input">
-                                <label class="form-check-label fw-bold">¿Hubo lesiones personales?</label>
+                    <div class="card-body p-4 bg-light rounded-bottom-4">
+                        <form method="POST">
+                            <h5 class="mb-3">📋 Información Personal</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Nombre Completo *</label>
+                                    <input type="text" name="nombre" class="form-control" required placeholder="Ej: Juan Pérez">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Email *</label>
+                                    <input type="email" name="email" class="form-control" required placeholder="Ej: juan@email.com">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="hay_danos_materiales" class="form-check-input">
-                                <label class="form-check-label fw-bold">¿Hubo daños materiales?</label>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Teléfono *</label>
+                                    <input type="tel" name="telefono" class="form-control" required placeholder="Ej: +54 11 1234-5678">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Fecha del Accidente *</label>
+                                    <input type="date" name="fecha_accidente" class="form-control" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="tiene_seguro" class="form-check-input" id="tieneSeguro">
-                                <label class="form-check-label fw-bold">¿Hay seguros involucrados?</label>
+
+                            <h5 class="mt-4 mb-3">🚗 Información del Accidente</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Tipo de Accidente *</label>
+                                    <select name="tipo_accidente" class="form-select" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="vehicular">Choque entre Vehículos</option>
+                                        <option value="peatonal">Atropello a Peatón</option>
+                                        <option value="motocicleta">Accidente de Motocicleta</option>
+                                        <option value="transporte_publico">Accidente en Transporte Público</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Su rol en el accidente *</label>
+                                    <select name="rol_usuario" class="form-select" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="victima">Víctima / Afectado</option>
+                                        <option value="causante">Causante / Responsable</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="row mb-3" id="segurosSection" style="display:none;">
-                        <div class="col-md-6">
-                            <label class="form-label">Su compañía de seguro</label>
-                            <input type="text" name="seguro_propio" class="form-control" placeholder="Ej: MAPFRE, SANCOR, ALLIANZ...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Compañía de seguro del otro involucrado</label>
-                            <input type="text" name="seguro_contrario" class="form-control" placeholder="Ej: SANCOR, RÍO URUGUAY, etc.">
-                        </div>
-                    </div>
+                            <h5 class="mt-4 mb-3">🔍 Detalles del Caso</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="hay_lesiones" class="form-check-input">
+                                        <label class="form-check-label fw-bold">¿Hubo lesiones personales?</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="hay_danos_materiales" class="form-check-input">
+                                        <label class="form-check-label fw-bold">¿Hubo daños materiales?</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="tiene_seguro" class="form-check-input" id="tieneSeguro">
+                                        <label class="form-check-label fw-bold">¿Hay seguros involucrados?</label>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Describa el accidente *</label>
-                        <textarea name="descripcion" class="form-control" rows="6" required placeholder="Describa en detalle cómo ocurrió el accidente, calles involucradas, testigos, daños visibles, lesiones, etc."></textarea>
-                        <div class="form-text">ℹ️ Sea lo más detallado posible para una mejor evaluación de su caso.</div>
-                    </div>
+                            <div class="row mb-3" id="segurosSection" style="display:none;">
+                                <div class="col-md-6">
+                                    <label class="form-label">Su compañía de seguro</label>
+                                    <input type="text" name="seguro_propio" class="form-control" placeholder="Ej: MAPFRE, SANCOR, ALLIANZ...">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Compañía de seguro del otro involucrado</label>
+                                    <input type="text" name="seguro_contrario" class="form-control" placeholder="Ej: SANCOR, RÍO URUGUAY, etc.">
+                                </div>
+                            </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg py-3">Solicitar Asesoría Gratuita</button>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Describa el accidente *</label>
+                                <textarea name="descripcion" class="form-control" rows="6" required placeholder="Describa en detalle cómo ocurrió el accidente, calles involucradas, testigos, daños visibles, lesiones, etc."></textarea>
+                                <div class="form-text">ℹ️ Sea lo más detallado posible para una mejor evaluación de su caso.</div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg py-3">Solicitar Asesoría Gratuita</button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <script>
     document.getElementById('tieneSeguro').addEventListener('change', function() {

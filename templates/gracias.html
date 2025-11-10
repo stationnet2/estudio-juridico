@@ -2,28 +2,77 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8 mx-auto text-center">
-        <div class="alert alert-success mb-4">
-            <h2 class="alert-heading">¡Gracias por contactarnos!</h2>
-            <p class="mb-3">Hemos recibido su consulta. Un abogado especializado se contactará dentro de las próximas 24 horas.</p>
-        </div>
+    <div class="col-md-8 mx-auto text-center my-5">
+        <!-- Fondo suave -->
+        <div class="p-4 rounded shadow" style="background: linear-gradient(135deg, rgba(26,54,93,0.1), rgba(45,55,72,0.05));">
 
-        <!-- Opción WhatsApp -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">¿Es una urgencia?</h5>
-                <p class="card-text">Puede contactarnos directamente por WhatsApp para una respuesta inmediata</p>
-                <a href="https://wa.me/5492212020976?text=Hola,%20acabo%20de%20enviar%20mi%20consulta%20y%20necesito%20ayuda%20inmediata" 
-                   target="_blank" 
-                   class="btn btn-success btn-lg">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
-                         alt="WhatsApp" width="24" height="24" class="me-2">
-                    Contactar por WhatsApp
-                </a>
+            <div class="alert alert-success mb-4 shadow-sm">
+                <h2 class="alert-heading">¡Gracias por contactarnos!</h2>
+                <p class="mb-3">Hemos recibido su consulta. Un abogado especializado se contactará dentro de las próximas 24 horas.</p>
             </div>
-        </div>
 
-        <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al Inicio</a>
+            <!-- Opción WhatsApp -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title">¿Es una urgencia?</h5>
+                    <p class="card-text">Puede contactarnos directamente por WhatsApp para una respuesta inmediata</p>
+                    <a href="https://wa.me/5492212020976?text=Hola,%20acabo%20de%20enviar%20mi%20consulta%20y%20necesito%20ayuda%20inmediata" 
+                       target="_blank" 
+                       class="btn btn-success btn-lg d-flex align-items-center justify-content-center mx-auto">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+                             alt="WhatsApp" width="28" height="28" class="me-2">
+                        Contactar por WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg mt-3">Volver al Inicio</a>
+        </div>
     </div>
 </div>
+
+<style>
+/* Ajuste de alert y card para mejor estética */
+.alert-success {
+    border-radius: 15px;
+    font-weight: 500;
+    background: linear-gradient(135deg, #1a365d, #2d3748);
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.card-text {
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.btn-success {
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+}
+
+.btn-primary {
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(26, 54, 93, 0.3);
+}
+</style>
 {% endblock %}
