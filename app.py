@@ -12,15 +12,26 @@ MONGO_URI = os.environ.get("MONGO_URI")
 if not MONGO_URI:
     MONGO_URI = "mongodb+srv://stationnet2:chicha1330@cluster0.hvj9lvn.mongodb.net/?appName=Cluster0"
 
-client = MongoClient(MONGO_URI)
-db = client["estudio_juridico"]
-coleccion = db["clientes"]
+try:
+    client = MongoClient(MONGO_URI)
+    db = client["estudio_juridico"]
+    coleccion = db["clientes"]
+    print("✅ Conectado a MongoDB Atlas correctamente")
+except Exception as e:
+    print(f"❌ Error conectando a MongoDB: {e}")
+    client = None
+    db = None
+    coleccion = None
 
 # =========================
 # FUNCIONES AUXILIARES
 # =========================
 def guardar_cliente(cliente_data):
     try:
+        if coleccion is None:
+            print("❌ No hay conexión a MongoDB")
+            return False
+            
         cliente_data['fecha_creacion'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         cliente_data['puntuacion_viabilidad'] = calcular_viabilidad(cliente_data)
         cliente_data['estado'] = evaluar_caso_automatico(cliente_data)
@@ -31,16 +42,22 @@ def guardar_cliente(cliente_data):
         if 'id' not in cliente_data:
             cliente_data['id'] = int(datetime.now().timestamp())
             
-        coleccion.insert_one(cliente_data)
+        resultado = coleccion.insert_one(cliente_data)
+        print(f"✅ Cliente guardado con ID: {cliente_data['id']}")
         return True
     except Exception as e:
-        print("ERROR guardando:", e)
+        print(f"❌ ERROR guardando cliente: {e}")
         return False
 
 def cargar_clientes():
     try:
+        if coleccion is None:
+            print("❌ No hay conexión a MongoDB")
+            return []
+            
         # Proyectar _id también para usarlo como fallback
         clientes = list(coleccion.find({}))
+        print(f"✅ Se cargaron {len(clientes)} clientes de MongoDB")
         
         # Normalizar los datos para asegurar que siempre tengan ID
         for cliente in clientes:
@@ -53,129 +70,166 @@ def cargar_clientes():
                 
         return clientes
     except Exception as e:
-        print("ERROR cargando clientes:", e)
+        print(f"❌ ERROR cargando clientes: {e}")
         return []
 
 def calcular_viabilidad(cliente):
-    p = 0
-    if cliente.get('hay_lesiones') == 'on': p += 3
-    if cliente.get('hay_danos_materiales') == 'on': p += 2
-    if cliente.get('tiene_seguro') == 'on': p += 2
-    if cliente.get('rol_usuario') == 'victima': p += 2
-    if cliente.get('tipo_accidente') == 'peatonal': p += 1
-    return min(10, p)
+    try:
+        p = 0
+        if cliente.get('hay_lesiones') == 'on': p += 3
+        if cliente.get('hay_danos_materiales') == 'on': p += 2
+        if cliente.get('tiene_seguro') == 'on': p += 2
+        if cliente.get('rol_usuario') == 'victima': p += 2
+        if cliente.get('tipo_accidente') == 'peatonal': p += 1
+        return min(10, p)
+    except Exception as e:
+        print(f"❌ ERROR calculando viabilidad: {e}")
+        return 0
 
 def evaluar_caso_automatico(cliente):
-    p = calcular_viabilidad(cliente)
-    if p >= 8 or (cliente.get('hay_lesiones') == 'on' and p >= 7):
-        return 'apto'
-    if p >= 5 or cliente.get('hay_danos_materiales') == 'on' or cliente.get('tiene_seguro') == 'on':
-        return 'en_revision'
-    return 'descartado'
+    try:
+        p = calcular_viabilidad(cliente)
+        if p >= 8 or (cliente.get('hay_lesiones') == 'on' and p >= 7):
+            return 'apto'
+        if p >= 5 or cliente.get('hay_danos_materiales') == 'on' or cliente.get('tiene_seguro') == 'on':
+            return 'en_revision'
+        return 'descartado'
+    except Exception as e:
+        print(f"❌ ERROR evaluando caso: {e}")
+        return 'nuevo'
 
 def calcular_prioridad(cliente):
-    estado = evaluar_caso_automatico(cliente)
-    if estado == 'apto' and cliente.get('hay_lesiones') == 'on': return 5
-    if estado == 'apto': return 4
-    if estado == 'en_revision': return 3
-    if estado == 'nuevo': return 2
-    return 1
+    try:
+        estado = evaluar_caso_automatico(cliente)
+        if estado == 'apto' and cliente.get('hay_lesiones') == 'on': return 5
+        if estado == 'apto': return 4
+        if estado == 'en_revision': return 3
+        if estado == 'nuevo': return 2
+        return 1
+    except Exception as e:
+        print(f"❌ ERROR calculando prioridad: {e}")
+        return 1
 
 def obtener_color_estado(estado):
-    colores = {
-        'nuevo': 'bg-primary',
-        'en_revision': 'bg-warning',
-        'apto': 'bg-success',
-        'descartado': 'bg-secondary',
-        'contactado': 'bg-info'
-    }
-    return colores.get(estado.lower().strip(), 'bg-secondary') if estado else 'bg-secondary'
+    try:
+        colores = {
+            'nuevo': 'bg-primary',
+            'en_revision': 'bg-warning',
+            'apto': 'bg-success',
+            'descartado': 'bg-secondary',
+            'contactado': 'bg-info'
+        }
+        return colores.get(estado.lower().strip(), 'bg-secondary') if estado else 'bg-secondary'
+    except Exception as e:
+        print(f"❌ ERROR obteniendo color estado: {e}")
+        return 'bg-secondary'
 
 def obtener_color_puntuacion(p):
-    if p >= 7: return 'bg-success'
-    if p >= 4: return 'bg-warning'
-    return 'bg-danger'
+    try:
+        if p >= 7: return 'bg-success'
+        if p >= 4: return 'bg-warning'
+        return 'bg-danger'
+    except Exception as e:
+        print(f"❌ ERROR obteniendo color puntuación: {e}")
+        return 'bg-secondary'
 
 # =========================
 # RUTAS PRINCIPALES
 # =========================
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        print(f"❌ ERROR en ruta index: {e}")
+        return "Error cargando la página principal", 500
 
 @app.route('/asesoria-gratuita', methods=['GET', 'POST'])
 def asesoria_gratuita():
-    if request.method == 'POST':
-        cliente_data = {
-            "id": int(datetime.now().timestamp()),
-            'nombre': request.form.get('nombre'),
-            'email': request.form.get('email'),
-            'telefono': request.form.get('telefono'),
-            'tipo_accidente': request.form.get('tipo_accidente'),
-            'rol_usuario': request.form.get('rol_usuario'),
-            'fecha_accidente': request.form.get('fecha_accidente'),
-            'descripcion': request.form.get('descripcion'),
-            'hay_lesiones': request.form.get('hay_lesiones'),
-            'hay_danos_materiales': request.form.get('hay_danos_materiales'),
-            'tiene_seguro': request.form.get('tiene_seguro'),
-            'seguro_propio': request.form.get('seguro_propio', ''),
-            'seguro_contrario': request.form.get('seguro_contrario', '')
-        }
+    try:
+        if request.method == 'POST':
+            cliente_data = {
+                "id": int(datetime.now().timestamp()),
+                'nombre': request.form.get('nombre'),
+                'email': request.form.get('email'),
+                'telefono': request.form.get('telefono'),
+                'tipo_accidente': request.form.get('tipo_accidente'),
+                'rol_usuario': request.form.get('rol_usuario'),
+                'fecha_accidente': request.form.get('fecha_accidente'),
+                'descripcion': request.form.get('descripcion'),
+                'hay_lesiones': request.form.get('hay_lesiones'),
+                'hay_danos_materiales': request.form.get('hay_danos_materiales'),
+                'tiene_seguro': request.form.get('tiene_seguro'),
+                'seguro_propio': request.form.get('seguro_propio', ''),
+                'seguro_contrario': request.form.get('seguro_contrario', '')
+            }
 
-        if not all([cliente_data['nombre'], cliente_data['email'], cliente_data['telefono']]):
-            flash('Complete los datos obligatorios', 'error')
-            return render_template('asesoria.html')
+            if not all([cliente_data['nombre'], cliente_data['email'], cliente_data['telefono']]):
+                flash('Complete los datos obligatorios', 'error')
+                return render_template('asesoria.html')
 
-        if guardar_cliente(cliente_data):
-            return redirect(url_for('gracias'))
-        else:
-            flash('Ocurrió un error guardando los datos', 'error')
+            if guardar_cliente(cliente_data):
+                return redirect(url_for('gracias'))
+            else:
+                flash('Ocurrió un error guardando los datos', 'error')
 
-    return render_template('asesoria.html')
+        return render_template('asesoria.html')
+    except Exception as e:
+        print(f"❌ ERROR en ruta asesoria: {e}")
+        flash('Error interno del servidor', 'error')
+        return render_template('asesoria.html')
 
 @app.route('/gracias')
 def gracias():
-    return render_template('gracias.html')
+    try:
+        return render_template('gracias.html')
+    except Exception as e:
+        print(f"❌ ERROR en ruta gracias: {e}")
+        return "Error cargando página de gracias", 500
 
 # =========================
 # DASHBOARD ADMIN
 # =========================
 @app.route('/admin/')
 def admin_dashboard():
-    clientes = cargar_clientes()
-    
-    # DEBUG DETALLADO
-    print(f"=== DEBUG DASHBOARD ===")
-    print(f"Total clientes cargados: {len(clientes)}")
-    
-    for i, cliente in enumerate(clientes):
-        estado = cliente.get('estado', 'NO TIENE ESTADO')
-        id_val = cliente.get('id', 'NO TIENE ID')
-        nombre = cliente.get('nombre', 'NO TIENE NOMBRE')
-        print(f"Cliente {i}: ID={id_val}, Estado='{estado}', Nombre='{nombre}'")
-    
-    # Filtrar casos pendientes - MOSTRAR MÁS CASOS PARA PRUEBAS
-    casos_pendientes = [c for c in clientes if c.get('estado','').strip().lower() in ['nuevo','en_revision', 'apto', 'contactado']]
-    
-    print(f"Casos pendientes encontrados: {len(casos_pendientes)}")
-    print("=== FIN DEBUG ===")
-    
-    ultimos_casos = sorted(clientes, key=lambda x: x.get('fecha_creacion',''), reverse=True)[:10]
+    try:
+        clientes = cargar_clientes()
+        
+        # DEBUG DETALLADO
+        print(f"=== DEBUG DASHBOARD ===")
+        print(f"Total clientes cargados: {len(clientes)}")
+        
+        for i, cliente in enumerate(clientes):
+            estado = cliente.get('estado', 'NO TIENE ESTADO')
+            id_val = cliente.get('id', 'NO TIENE ID')
+            nombre = cliente.get('nombre', 'NO TIENE NOMBRE')
+            print(f"Cliente {i}: ID={id_val}, Estado='{estado}', Nombre='{nombre}'")
+        
+        # MOSTRAR TODOS LOS CASOS
+        casos_pendientes = clientes  # Mostrar todos los casos
+        
+        print(f"Casos a mostrar: {len(casos_pendientes)}")
+        print("=== FIN DEBUG ===")
+        
+        ultimos_casos = sorted(clientes, key=lambda x: x.get('fecha_creacion',''), reverse=True)[:10]
 
-    return render_template(
-        'admin/dashboard.html',
-        clientes=clientes,
-        casos_pendientes=casos_pendientes,
-        ultimos_casos=ultimos_casos,
-        total_casos=len(clientes),
-        casos_nuevos=len([c for c in clientes if c.get('estado','').strip().lower() == 'nuevo']),
-        casos_aptos=len([c for c in clientes if c.get('estado','').strip().lower() == 'apto']),
-        casos_revision=len([c for c in clientes if c.get('estado','').strip().lower() == 'en_revision']),
-        casos_descartados=len([c for c in clientes if c.get('estado','').strip().lower() == 'descartado']),
-        casos_contactados=len([c for c in clientes if c.get('estado','').strip().lower() == 'contactado']),
-        obtener_color_estado=obtener_color_estado,
-        obtener_color_puntuacion=obtener_color_puntuacion
-    )
+        return render_template(
+            'admin/dashboard.html',
+            clientes=clientes,
+            casos_pendientes=casos_pendientes,
+            ultimos_casos=ultimos_casos,
+            total_casos=len(clientes),
+            casos_nuevos=len([c for c in clientes if c.get('estado','').strip().lower() == 'nuevo']),
+            casos_aptos=len([c for c in clientes if c.get('estado','').strip().lower() == 'apto']),
+            casos_revision=len([c for c in clientes if c.get('estado','').strip().lower() == 'en_revision']),
+            casos_descartados=len([c for c in clientes if c.get('estado','').strip().lower() == 'descartado']),
+            casos_contactados=len([c for c in clientes if c.get('estado','').strip().lower() == 'contactado']),
+            obtener_color_estado=obtener_color_estado,
+            obtener_color_puntuacion=obtener_color_puntuacion
+        )
+    except Exception as e:
+        print(f"❌ ERROR en ruta admin_dashboard: {e}")
+        return f"Error interno del servidor: {str(e)}", 500
 
 # =========================
 # DETALLE Y ACTUALIZACIÓN DE CASO
@@ -183,6 +237,9 @@ def admin_dashboard():
 @app.route('/admin/caso/<id>')
 def detalle_caso(id):
     try:
+        if coleccion is None:
+            return "Error de conexión a la base de datos", 500
+            
         # Intentar buscar por ID numérico primero
         try:
             id_num = int(id)
@@ -205,12 +262,16 @@ def detalle_caso(id):
             obtener_color_puntuacion=obtener_color_puntuacion
         )
     except Exception as e:
-        print(f"Error en detalle_caso: {e}")
+        print(f"❌ ERROR en ruta detalle_caso: {e}")
         return f"Error al cargar el caso: {str(e)}", 500
 
 @app.route('/admin/actualizar-caso/<id>', methods=['POST'])
 def actualizar(id):
     try:
+        if coleccion is None:
+            flash("Error de conexión a la base de datos", "error")
+            return redirect(f"/admin/caso/{id}")
+            
         nuevos_datos = {
             "estado": request.form.get("estado"),
             "prioridad": int(request.form.get("prioridad")),
@@ -236,6 +297,10 @@ def actualizar(id):
 @app.route('/admin/borrar-caso/<id>', methods=['POST'])
 def borrar_caso(id):
     try:
+        if coleccion is None:
+            flash("Error de conexión a la base de datos", "error")
+            return redirect(url_for('admin_dashboard'))
+            
         # Intentar eliminar por ID numérico primero
         try:
             id_num = int(id)
@@ -259,6 +324,10 @@ def borrar_caso(id):
 @app.route('/admin/cambiar-prioridad/<id>', methods=['POST'])
 def cambiar_prioridad(id):
     try:
+        if coleccion is None:
+            flash("Error de conexión a la base de datos", "error")
+            return redirect(url_for('admin_dashboard'))
+            
         nueva_prioridad = int(request.form.get('prioridad'))
         
         # Intentar actualizar por ID numérico primero
@@ -277,6 +346,10 @@ def cambiar_prioridad(id):
 @app.route('/admin/cambiar-estado/<id>', methods=['POST'])
 def cambiar_estado(id):
     try:
+        if coleccion is None:
+            flash("Error de conexión a la base de datos", "error")
+            return redirect(url_for('admin_dashboard'))
+            
         nuevo_estado = request.form.get('estado')
         
         # Intentar actualizar por ID numérico primero
@@ -295,6 +368,10 @@ def cambiar_estado(id):
 @app.route('/admin/eliminar-multiples', methods=['POST'])
 def eliminar_multiples_casos():
     try:
+        if coleccion is None:
+            flash("Error de conexión a la base de datos", "error")
+            return redirect(url_for('admin_dashboard'))
+            
         casos_ids = request.form.getlist('casos_seleccionados')
         if casos_ids:
             deleted_count = 0
@@ -318,32 +395,6 @@ def eliminar_multiples_casos():
             flash("No se seleccionaron casos para eliminar", "warning")
     except Exception as e:
         flash(f"Error al eliminar casos: {str(e)}", "error")
-    return redirect(url_for('admin_dashboard'))
-
-# =========================
-# SCRIPT DE MIGRACIÓN PARA ARREGLAR DATOS EXISTENTES
-# =========================
-@app.route('/admin/fix-data')
-def fix_data():
-    """Endpoint para arreglar datos existentes que no tienen ID"""
-    try:
-        # Encontrar todos los documentos que no tienen campo 'id'
-        documentos_sin_id = coleccion.find({"id": {"$exists": False}})
-        fixed_count = 0
-        
-        for doc in documentos_sin_id:
-            # Generar un ID basado en el timestamp
-            nuevo_id = int(datetime.now().timestamp()) + fixed_count
-            coleccion.update_one(
-                {"_id": doc["_id"]}, 
-                {"$set": {"id": nuevo_id}}
-            )
-            fixed_count += 1
-            
-        flash(f"Se arreglaron {fixed_count} documentos sin ID", "success")
-    except Exception as e:
-        flash(f"Error arreglando datos: {str(e)}", "error")
-        
     return redirect(url_for('admin_dashboard'))
 
 # =========================
