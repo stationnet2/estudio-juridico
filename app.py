@@ -183,6 +183,50 @@ def borrar_caso(id):
     return redirect(url_for('admin_dashboard'))
 
 # =========================
+# NUEVAS RUTAS PARA DASHBOARD MEJORADO
+# =========================
+@app.route('/admin/cambiar-prioridad/<int:id>', methods=['POST'])
+def cambiar_prioridad(id):
+    try:
+        nueva_prioridad = int(request.form.get('prioridad'))
+        coleccion.update_one(
+            {"id": id}, 
+            {"$set": {"prioridad": nueva_prioridad}}
+        )
+        flash(f"Prioridad del caso #{id} actualizada correctamente", "success")
+    except Exception as e:
+        flash(f"Error al actualizar prioridad: {str(e)}", "error")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/cambiar-estado/<int:id>', methods=['POST'])
+def cambiar_estado(id):
+    try:
+        nuevo_estado = request.form.get('estado')
+        coleccion.update_one(
+            {"id": id}, 
+            {"$set": {"estado": nuevo_estado}}
+        )
+        flash(f"Estado del caso #{id} actualizado a {nuevo_estado}", "success")
+    except Exception as e:
+        flash(f"Error al actualizar estado: {str(e)}", "error")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/eliminar-multiples', methods=['POST'])
+def eliminar_multiples_casos():
+    try:
+        casos_ids = request.form.getlist('casos_seleccionados')
+        if casos_ids:
+            # Convertir a enteros
+            casos_ids = [int(id) for id in casos_ids]
+            resultado = coleccion.delete_many({"id": {"$in": casos_ids}})
+            flash(f"{resultado.deleted_count} casos eliminados correctamente", "success")
+        else:
+            flash("No se seleccionaron casos para eliminar", "warning")
+    except Exception as e:
+        flash(f"Error al eliminar casos: {str(e)}", "error")
+    return redirect(url_for('admin_dashboard'))
+
+# =========================
 # EJECUTAR SERVIDOR
 # =========================
 if __name__ == '__main__':
