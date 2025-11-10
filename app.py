@@ -7,7 +7,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'clave-secreta-estudio-juridico-2024'
 
 # ✅ Conexión a MongoDB Atlas
-MONGO_URI = "mongodb+srv://stationnet2_db_user:chicha1330I@cluster0.hvj9lvn.mongodb.net/?appName=Cluster0"
+MONGO_URI = os.environ.get("MONGO_URI")
+
 client = MongoClient(MONGO_URI)
 
 # ✅ Base de datos y colección
