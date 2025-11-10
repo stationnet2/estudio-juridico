@@ -98,7 +98,7 @@
                     <tbody>
                         {% for caso in casos_pendientes %}
                         <tr>
-                            <td><strong>#{{ caso.id }}</strong></td>
+                            <td><strong>#{{ caso._id }}</strong></td>
                             <td>{{ caso.nombre }}</td>
                             <td>
                                 <small>{{ caso.email }}</small><br>
@@ -136,7 +136,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="/admin/caso/{{ caso.id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
+                                <a href="/admin/caso/{{ caso._id }}" class="btn btn-sm btn-primary">Ver Detalles</a>
                             </td>
                         </tr>
                         {% endfor %}

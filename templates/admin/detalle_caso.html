@@ -18,23 +18,23 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Nombre:</strong> {{ caso.nombre }}</p>
+                        <p><strong>Nombre:</strong> {{ caso.nombre or 'No especificado' }}</p>
                         <p><strong>Email:</strong> 
-                            <a href="mailto:{{ caso.email }}">{{ caso.email }}</a>
+                            <a href="mailto:{{ caso.email }}">{{ caso.email or 'No especificado' }}</a>
                         </p>
                         <p><strong>Teléfono:</strong> 
-                            <a href="tel:{{ caso.telefono }}">{{ caso.telefono }}</a>
+                            <a href="tel:{{ caso.telefono }}">{{ caso.telefono or 'No especificado' }}</a>
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Fecha de creación:</strong> {{ caso.fecha_creacion }}</p>
+                        <p><strong>Fecha de creación:</strong> {{ caso.fecha_creacion or 'N/A' }}</p>
                         <p><strong>Estado actual:</strong> 
-                            <span class="badge {{ obtener_color_estado(caso.estado) }}">
-                                {{ caso.estado }}
+                            <span class="badge {{ obtener_color_estado(caso.estado or 'nuevo') }}">
+                                {{ caso.estado or 'nuevo' }}
                             </span>
                         </p>
                         <p><strong>Prioridad:</strong> 
-                            {% set prioridad = caso.prioridad %}
+                            {% set prioridad = caso.prioridad or 1 %}
                             {% if prioridad == 5 %}
                             <span class="badge bg-danger">Máxima</span>
                             {% elif prioridad == 4 %}
@@ -64,13 +64,15 @@
                             {% if caso.tipo_accidente == 'vehicular' %}🚗 Vehicular
                             {% elif caso.tipo_accidente == 'peatonal' %}🚶 Peatonal
                             {% elif caso.tipo_accidente == 'motocicleta' %}🏍️ Motocicleta
-                            {% else %}🚌 Transporte Público{% endif %}
+                            {% elif caso.tipo_accidente == 'publico' %}🚌 Transporte Público
+                            {% else %}No especificado{% endif %}
                         </p>
                         <p><strong>Rol del cliente:</strong> 
                             {% if caso.rol_usuario == 'victima' %}👤 Víctima/Afectado
-                            {% else %}🚦 Causante/Responsable{% endif %}
+                            {% elif caso.rol_usuario == 'responsable' %}🚦 Causante/Responsable
+                            {% else %}No especificado{% endif %}
                         </p>
-                        <p><strong>Fecha del accidente:</strong> {{ caso.fecha_accidente }}</p>
+                        <p><strong>Fecha del accidente:</strong> {{ caso.fecha_accidente or 'No indicada' }}</p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Lesiones personales:</strong> 
@@ -108,7 +110,9 @@
             </div>
             <div class="card-body">
                 <div class="bg-light p-3 rounded">
-                    <p style="white-space: pre-wrap; line-height: 1.6;">{{ caso.descripcion }}</p>
+                    <p style="white-space: pre-wrap; line-height: 1.6;">
+                        {{ caso.descripcion or 'Sin descripción disponible.' }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -121,12 +125,14 @@
                 <h5 class="mb-0">⚡ Evaluación del Caso</h5>
             </div>
             <div class="card-body">
+                {% set punt = caso.puntuacion_viabilidad or 0 %}
+
                 <div class="mb-3">
                     <label class="form-label fw-bold">Puntuación de viabilidad:</label>
                     <div class="progress mb-2" style="height: 25px;">
-                        <div class="progress-bar {{ obtener_color_puntuacion(caso.puntuacion_viabilidad) }}" 
-                             style="width: {{ caso.puntuacion_viabilidad * 10 }}%">
-                            <strong>{{ caso.puntuacion_viabilidad }}/10</strong>
+                        <div class="progress-bar {{ obtener_color_puntuacion(punt) }}" 
+                             style="width: {{ punt * 10 }}%">
+                            <strong>{{ punt }}/10</strong>
                         </div>
                     </div>
                 </div>
@@ -134,8 +140,8 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Estado del caso:</label>
                     <div>
-                        <span class="badge {{ obtener_color_estado(caso.estado) }} mb-2" style="font-size: 1em;">
-                            {{ caso.estado|upper }}
+                        <span class="badge {{ obtener_color_estado(caso.estado or 'nuevo') }} mb-2" style="font-size: 1em;">
+                            {{ (caso.estado or 'nuevo')|upper }}
                         </span>
                     </div>
                 </div>
@@ -143,9 +149,9 @@
                 <div class="alert alert-info">
                     <small>
                         <strong>Evaluación automática:</strong><br>
-                        {% if caso.puntuacion_viabilidad >= 8 %}
+                        {% if punt >= 8 %}
                         ✅ <strong>Caso de alta viabilidad</strong><br>Recomendado para seguimiento inmediato
-                        {% elif caso.puntuacion_viabilidad >= 5 %}
+                        {% elif punt >= 5 %}
                         ⚠️ <strong>Caso de viabilidad media</strong><br>Requiere revisión detallada
                         {% else %}
                         ❌ <strong>Caso de baja viabilidad</strong><br>Posible descarte
@@ -165,12 +171,12 @@
                     <a href="tel:{{ caso.telefono }}" class="btn btn-success btn-sm">
                         📞 Llamar al cliente
                     </a>
-                    <a href="https://wa.me/549{{ caso.telefono|replace(' ', '')|replace('+', '')|replace('-', '') }}?text=Hola {{ caso.nombre }}, soy del estudio jurídico. Vi su consulta sobre el accidente y me gustaría ayudarle." 
+                    <a href="https://wa.me/549{{ (caso.telefono or '')|replace(' ', '')|replace('+', '')|replace('-', '') }}?text=Hola {{ caso.nombre or '' }}, soy del estudio jurídico. Vi su consulta sobre el accidente y me gustaría ayudarle." 
                        target="_blank" 
                        class="btn btn-success btn-sm">
                         📱 WhatsApp al cliente
                     </a>
-                    <a href="mailto:{{ caso.email }}?subject=Estudio Jurídico - Consulta sobre accidente&body=Hola {{ caso.nombre }},%0D%0A%0D%0AHe revisado su consulta sobre el accidente y me gustaría programar una reunión para evaluar su caso.%0D%0A%0D%0ASaludos cordiales" 
+                    <a href="mailto:{{ caso.email }}?subject=Estudio Jurídico - Consulta sobre accidente&body=Hola {{ caso.nombre or '' }},%0D%0A%0D%0AHe revisado su consulta sobre el accidente y me gustaría programar una reunión para evaluar su caso.%0D%0A%0D%0ASaludos cordiales" 
                        class="btn btn-primary btn-sm">
                         ✉️ Enviar email
                     </a>
@@ -181,21 +187,23 @@
                     <div class="mb-2">
                         <label class="form-label fw-bold">Actualizar estado:</label>
                         <select name="estado" class="form-select form-select-sm">
-                            <option value="nuevo" {{ 'selected' if caso.estado == 'nuevo' }}>Nuevo</option>
-                            <option value="en_revision" {{ 'selected' if caso.estado == 'en_revision' }}>En Revisión</option>
-                            <option value="apto" {{ 'selected' if caso.estado == 'apto' }}>Apto</option>
-                            <option value="descartado" {{ 'selected' if caso.estado == 'descartado' }}>Descartado</option>
-                            <option value="contactado" {{ 'selected' if caso.estado == 'contactado' }}>Contactado</option>
+                            {% set est = caso.estado or 'nuevo' %}
+                            <option value="nuevo" {{ 'selected' if est == 'nuevo' }}>Nuevo</option>
+                            <option value="en_revision" {{ 'selected' if est == 'en_revision' }}>En Revisión</option>
+                            <option value="apto" {{ 'selected' if est == 'apto' }}>Apto</option>
+                            <option value="descartado" {{ 'selected' if est == 'descartado' }}>Descartado</option>
+                            <option value="contactado" {{ 'selected' if est == 'contactado' }}>Contactado</option>
                         </select>
                     </div>
                     <div class="mb-2">
                         <label class="form-label fw-bold">Prioridad:</label>
+                        {% set pr = caso.prioridad or 1 %}
                         <select name="prioridad" class="form-select form-select-sm">
-                            <option value="1" {{ 'selected' if caso.prioridad == 1 }}>Mínima</option>
-                            <option value="2" {{ 'selected' if caso.prioridad == 2 }}>Baja</option>
-                            <option value="3" {{ 'selected' if caso.prioridad == 3 }}>Media</option>
-                            <option value="4" {{ 'selected' if caso.prioridad == 4 }}>Alta</option>
-                            <option value="5" {{ 'selected' if caso.prioridad == 5 }}>Máxima</option>
+                            <option value="1" {{ 'selected' if pr == 1 }}>Mínima</option>
+                            <option value="2" {{ 'selected' if pr == 2 }}>Baja</option>
+                            <option value="3" {{ 'selected' if pr == 3 }}>Media</option>
+                            <option value="4" {{ 'selected' if pr == 4 }}>Alta</option>
+                            <option value="5" {{ 'selected' if pr == 5 }}>Máxima</option>
                         </select>
                     </div>
                     <div class="mb-2">
